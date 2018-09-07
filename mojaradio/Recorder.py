@@ -1,6 +1,7 @@
 import re
 import urllib.request
 import xml.etree.ElementTree as ElementTree
+from datetime import datetime
 
 from mojaradio.Station import Station
 from mojaradio.Program import Program
@@ -28,15 +29,14 @@ class Recorder:
             station = Station(station_id, name, programs)
             self.stations.append(station)
 
-    @staticmethod
-    def __parse_progs(progs):
+    def __parse_progs(self, progs):
         programs = []
 
         for prog in progs:
             if prog.tag == 'prog':
                 title = prog[0].text
                 pfm = prog[3].text
-                ft = prog.attrib['ft']
+                ft = self.__parse_ft(prog.attrib['ft'])
                 dur = prog.attrib['dur']
 
                 if not re.match('(放送|番組)休止中', title):
@@ -45,6 +45,10 @@ class Recorder:
                     programs.append(program)
 
         return programs
+
+    @staticmethod
+    def __parse_ft(ft):
+        return datetime.strptime(ft, '%Y%m%d%H%M%S')
 
     @staticmethod
     def reserve(program):
